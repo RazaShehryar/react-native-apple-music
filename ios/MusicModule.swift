@@ -417,6 +417,30 @@ class MusicModule: RCTEventEmitter {
           }
       }
 }
+     
+    @objc(getUserLibrary:types:options:resolver:rejecter:)
+    func getUserLibrary(options: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+          
+
+            let limit = options["limit"] as? Int ?? 25
+            let offset = options["offset"] as? Int ?? 0
+
+            var request = MusicLibraryRequest()
+            request.limit = limit
+            request.offset = offset
+
+            do {
+                let response = try await request.response()
+                print("Response received: \(response)")
+
+
+                resolve(["items": response.items])
+            } catch {
+                reject("ERROR", "Failed to fetch user library: \(error)", error)
+            }
+        }
+  }
 
     @available(iOS 16.0, *)
     @objc(getTracksFromLibrary:rejecter:)

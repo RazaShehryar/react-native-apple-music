@@ -35,6 +35,23 @@ class MusicKit {
     }
   }
 
+   /**
+   * Searches the user's Apple Music library using the specified options.
+   * @param {IEndlessListOptions} [options] - Additional options for the search.
+   * @returns {Promise<{items: any[]}>} A promise that resolves to the search results.
+   */
+  public static async getUserLibrary(
+    options?: IEndlessListOptions,
+  ): Promise<{items: any[]} | undefined> {
+    try {
+      return (await MusicModule.getUserLibrary(options))
+    } catch (error) {
+      console.error('Apple Music Kit: Catalog Search failed.', error);
+
+      return {items: []}
+    }
+  }
+
   /**
    * @param itemId - ID of collection to be set in a player's queue
    * @param {MusicItem} type - Type of collection to be found and set
