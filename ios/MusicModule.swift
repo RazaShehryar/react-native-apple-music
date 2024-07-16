@@ -418,7 +418,8 @@ class MusicModule: RCTEventEmitter {
       }
 }
      
-    @objc(getUserLibrary:types:options:resolver:rejecter:)
+    @available(iOS 16.0, *)
+    @objc(options:resolver:rejecter:)
     func getUserLibrary(options: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
           
@@ -426,7 +427,7 @@ class MusicModule: RCTEventEmitter {
             let limit = options["limit"] as? Int ?? 25
             let offset = options["offset"] as? Int ?? 0
 
-            var request = MusicLibraryRequest()
+            var request = MusicLibraryRequest<Song>()
             request.limit = limit
             request.offset = offset
 
