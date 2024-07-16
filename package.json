@@ -1,5 +1,5 @@
 {
-  "name": "@lomray/react-native-apple-music",
+  "name": "react-native-apple-musickit",
   "version": "1.0.0",
   "description": "Apple MusicKit for React-Native",
   "main": "index.js",
@@ -17,13 +17,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Lomray-Software/react-native-apple-music.git"
+    "url": "git+https://github.com/RazaShehryar/react-native-apple-music.git"
   },
   "bugs": {
-    "url": "https://github.com/Lomray-Software/react-native-apple-music/issues"
+    "url": "https://github.com/RazaShehryar/react-native-apple-music/issues"
   },
-  "homepage": "https://github.com/Lomray-Software/react-native-apple-music#readme",
-  "author": "Lomray Software",
+  "homepage": "https://github.com/RazaShehryar/react-native-apple-music#readme",
+  "author": "Shehryar Raza",
   "license": "Apache-2.0",
   "scripts": {
     "build": "rollup -c",
