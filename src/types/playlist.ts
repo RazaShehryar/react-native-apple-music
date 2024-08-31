@@ -4,5 +4,4 @@ export interface IPlaylist {
   description: string;
   artworkUrl: string;
   trackCount: number;
-  localId?: string;
 }

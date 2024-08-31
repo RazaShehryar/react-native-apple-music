@@ -1,11 +1,6 @@
 module.exports = {
   root: true,
-  extends: [
-    'prettier',
-    'plugin:prettier/recommended',
-    'plugin:jsx-a11y/recommended',
-    '@lomray/eslint-config'
-  ],
+  extends: ['prettier', 'plugin:prettier/recommended', 'plugin:jsx-a11y/recommended'],
   ignorePatterns: ['/*.*', 'src/@types'],
   plugins: [],
   env: {
@@ -35,8 +30,8 @@ module.exports = {
     'prettier/prettier': [
       'error',
       {
-        endOfLine: 'auto'
-      }
-    ]
-  }
-}
+        endOfLine: 'auto',
+      },
+    ],
+  },
+};

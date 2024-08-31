@@ -1,6 +1,6 @@
 {
-  "name": "react-native-apple-musickit",
-  "version": "1.0.0",
+  "name": "@shehryarraza/react-native-apple-music",
+  "version": "1.0.3",
   "description": "Apple MusicKit for React-Native",
   "main": "index.js",
   "type": "module",
@@ -17,13 +17,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RazaShehryar/react-native-apple-music.git"
+    "url": "https://github.com/RazaShehryar/react-native-apple-music.git"
   },
   "bugs": {
     "url": "https://github.com/RazaShehryar/react-native-apple-music/issues"
   },
   "homepage": "https://github.com/RazaShehryar/react-native-apple-music#readme",
-  "author": "Shehryar Raza",
+  "author": "Lomray Software",
   "license": "Apache-2.0",
   "scripts": {
     "build": "rollup -c",
@@ -31,15 +31,13 @@
     "lint:check": "eslint --ext \".ts,.tsx\" \"src/**/*.{ts,tsx,*.ts,*tsx}\"",
     "lint:format": "eslint --fix --ext \".ts,.tsx\" \"src/**/*.{ts,tsx,*.ts,*tsx}\"",
     "ts:check": "tsc --project ./tsconfig.json --skipLibCheck --noemit",
-    "prepare": "husky install"
+    "prepare": "husky installtemplate/.husky"
   },
   "devDependencies": {
     "@babel/core": "^7.23.6",
     "@babel/preset-react": "^7.23.3",
     "@babel/runtime": "^7.23.6",
     "@commitlint/config-conventional": "^17.0.2",
-    "@lomray/eslint-config": "^3.0.0",
-    "@lomray/prettier-config": "^1.2.0",
     "@react-native/eslint-config": "^0.72.2",
     "@rollup/plugin-json": "^6.1.0",
     "@types/jest": "^28.1.2",
