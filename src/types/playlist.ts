@@ -1,9 +1,8 @@
-export interface IAlbum {
+export interface IPlaylist {
   id: string;
   title: string;
-  artistName: string;
+  description: string;
   artworkUrl: string;
   trackCount: number;
   localId?: string;
-  artistId?: string;
 }

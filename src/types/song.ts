@@ -4,4 +4,6 @@ export interface ISong {
   artworkUrl: string;
   id: string;
   duration: number;
+  localId?: string;
+  albumId?: string;
 }
