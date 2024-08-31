@@ -1,6 +1,6 @@
-import { NativeModules } from 'react-native';
-import type { AuthStatus } from '../types/auth-status';
-import type { ICheckSubscription } from '../types/check-subscription';
+import { NativeModules } from "react-native";
+import type { AuthStatus } from "../types/auth-status";
+import type { ICheckSubscription } from "../types/check-subscription";
 
 const { MusicModule } = NativeModules;
 
@@ -15,7 +15,7 @@ class Auth {
       try {
         MusicModule.authorization(res);
       } catch (error) {
-        console.error('Apple Music Kit: Authorize failed.', error);
+        console.error("Apple Music Kit: Authorize failed.", error);
 
         rej(error);
       }
@@ -32,7 +32,7 @@ class Auth {
 
       return result;
     } catch (error) {
-      console.error('Apple Music Kit: Check subscription failed.', error);
+      console.error("Apple Music Kit: Check subscription failed.", error);
 
       return {
         canPlayCatalogContent: false,

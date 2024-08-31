@@ -1,137 +1,139 @@
-import type { EmitterSubscription } from 'react-native';
-import type { IPlaybackState } from '../types/playback-state.js';
-import type { ISong } from '../types/song.js';
+import {
+  EmitterSubscription,
+  NativeEventEmitter,
+  NativeModules,
+} from "react-native";
+import type { IPlaybackState } from "types/playback-state";
+import type { ISong } from "types/song";
 
+const { MusicModule } = NativeModules;
+const nativeEventEmitter = new NativeEventEmitter(MusicModule);
 interface IPlayerEvents {
   onPlaybackStateChange: IPlaybackState;
   onCurrentSongChange: ISong;
   onLocalCurrentSongChange: ISong;
 }
-declare class Player {
-  /**
-   * Skips to the previous local entry in the playback queue.
-   */
-  /**
-   * Skips to the previous local entry in the playback queue.
-   */
-  static skipLocalToPreviousEntry(): void;
+class Player {
   /**
    * Skips to the previous entry in the playback queue.
    */
+  public static skipToPreviousEntry(): void {
+    MusicModule.skipToPreviousEntry();
+  }
   /**
    * Skips to the previous entry in the playback queue.
    */
-  static skipToPreviousEntry(): void;
+  public static skipLocalToPreviousEntry(): void {
+    MusicModule.skipLocalToPreviousEntry();
+  }
   /**
-   * Skips to the next local entry in the playback queue.
+   * Skips to the previous local entry in the playback queue.
    */
-  /**
-   * Skips to the next local entry in the playback queue.
-   */
-  static skipLocalToNextEntry(): void;
-  /**
-   * Skips to the next entry in the playback queue.
-   */
+  public static skipLocalToNextEntry(): void {
+    MusicModule.skipLocalToNextEntry();
+  }
   /**
    * Skips to the next entry in the playback queue.
    */
-  static skipToNextEntry(): void;
+  public static skipToNextEntry(): void {
+    MusicModule.skipToNextEntry();
+  }
   /**
    * Toggles the local playback state between play and pause.
    */
-  /**
-   * Toggles the local playback state between play and pause.
-   */
-  static toggleLocalPlayerState(): void;
-  /**
-   * Toggles the playback state between play and pause.
-   */
+  public static toggleLocalPlayerState(): void {
+    MusicModule.toggleLocalPlayerState();
+  }
   /**
    * Toggles the playback state between play and pause.
    */
-  static togglePlayerState(): void;
+  public static togglePlayerState(): void {
+    MusicModule.togglePlayerState();
+  }
   /**
    * Starts local playback of the current song.
    */
-  /**
-   * Starts local playback of the current song.
-   */
-  static playLocal(): void;
-  /**
-   * Starts playback of the current song.
-   */
+  public static playLocal(): void {
+    MusicModule.playLocal();
+  }
   /**
    * Starts playback of the current song.
    */
-  static play(): void;
+  public static play(): void {
+    MusicModule.play();
+  }
   /**
-   * Play a song from the queue.
+   * @param persistentID - ID of collection to be set in a player's queue
+   * @returns {Promise<boolean>} when tracks successfully plays
    */
-  /**
-   * Play a song from the queue.
-   */
-  static playLocalSongInQueue(persistentID: string): void;
+  public static async playLocalSongInQueue(
+    persistentID: string
+  ): Promise<void> {
+    MusicModule.playLocalSongInQueue(persistentID);
+  }
   /**
    * Pauses local playback of the current song.
    */
-  /**
-   * Pauses local playback of the current song.
-   */
-  static pauseLocal(): void;
-  /**
-   * Pauses playback of the current song.
-   */
+  public static pauseLocal(): void {
+    MusicModule.pauseLocal();
+  }
   /**
    * Pauses playback of the current song.
    */
-  static pause(): void;
+  public static pause(): void {
+    MusicModule.pause();
+  }
   /**
    * Retrieves the local current playback state from the native music player.
    * This function returns a promise that resolves to the local current playback state.
    * @returns {Promise<IPlaybackState>} A promise that resolves to the local current playback state of the music player.
    */
-  /**
-   * Retrieves the local current playback state from the native music player.
-   * This function returns a promise that resolves to the local current playback state.
-   * @returns {Promise<IPlaybackState>} A promise that resolves to the local current playback state of the music player.
-   */
-  static getLocalCurrentState(): Promise<IPlaybackState>;
+  public static getLocalCurrentState(): Promise<IPlaybackState> {
+    return new Promise((res, rej) => {
+      try {
+        MusicModule.getLocalCurrentState(res);
+      } catch (error) {
+        console.error("Apple Music Kit: getLocalCurrentState failed.", error);
+        rej(error);
+      }
+    });
+  }
   /**
    * Retrieves the current playback state from the native music player.
    * This function returns a promise that resolves to the current playback state.
    * @returns {Promise<IPlaybackState>} A promise that resolves to the current playback state of the music player.
    */
-  /**
-   * Retrieves the current playback state from the native music player.
-   * This function returns a promise that resolves to the current playback state.
-   * @returns {Promise<IPlaybackState>} A promise that resolves to the current playback state of the music player.
-   */
-  static getCurrentState(): Promise<IPlaybackState>;
+  public static getCurrentState(): Promise<IPlaybackState> {
+    return new Promise((res, rej) => {
+      try {
+        MusicModule.getCurrentState(res);
+      } catch (error) {
+        console.error("Apple Music Kit: getCurrentState failed.", error);
+
+        rej(error);
+      }
+    });
+  }
   /**
    * Method to add a listener for an event.
    * @param eventType - Type of the event to listen for.
    * @param listener - Function to execute when the event is emitted.
    * @returns An EmitterSubscription which can be used to remove the listener.
    */
-  /**
-   * Method to add a listener for an event.
-   * @param eventType - Type of the event to listen for.
-   * @param listener - Function to execute when the event is emitted.
-   * @returns An EmitterSubscription which can be used to remove the listener.
-   */
-  static addListener(
+  public static addListener(
     eventType: keyof IPlayerEvents,
-    listener: (eventData: any) => void,
-  ): EmitterSubscription;
+    listener: (eventData: any) => void
+  ): EmitterSubscription {
+    return nativeEventEmitter.addListener(eventType, listener);
+  }
   /**
    * Method to remove all listeners of event
    * @param eventType - Type of the event to remove listener for.
    */
-  /**
-   * Method to remove all listeners of event
-   * @param eventType - Type of the event to remove listener for.
-   */
-  static removeAllListeners(eventType: keyof IPlayerEvents): void;
+  public static removeAllListeners(eventType: keyof IPlayerEvents): void {
+    return nativeEventEmitter.removeAllListeners(eventType);
+  }
 }
 
-export default Player;
+export { Player as default };
+//# sourceMappingURL=player.js.map
