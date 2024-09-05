@@ -754,7 +754,12 @@ class MusicModule: RCTEventEmitter {
             let playlists = try JSONDecoder().decode(MusicItemCollection<Playlist>.self, from: response.data)
             guard let playlist = playlists.first else { return [] }
             
+
+            
             if let tracks = playlist.tracks {
+                let player = SystemMusicPlayer.shared
+                player.queue = []
+                try await player.queue.insert(tracks, position: MusicPlayer.Queue.EntryInsertionPosition.afterCurrentEntry)
                 // Collect all Song objects into an array
                 let songs: [Song] = tracks.compactMap { track in
                     if case .song(let song) = track {
@@ -766,8 +771,7 @@ class MusicModule: RCTEventEmitter {
                 // You can now use the `songs` array as needed
                 print("These are all the playlist fetched songs \(songs)")
                 
-                let player = SystemMusicPlayer.shared
-                player.queue = [playlist]
+               
                 
                 return songs
             }
