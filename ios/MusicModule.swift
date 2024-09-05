@@ -729,7 +729,9 @@ class MusicModule: RCTEventEmitter {
                 
                 let player = SystemMusicPlayer.shared
                 
-                player.queue = [catalogSong] /// <- directly add items to the queue
+                try await player.queue.insert(catalogSong, position: MusicPlayer.Queue.EntryInsertionPosition.afterCurrentEntry)
+                
+//                player.queue = [catalogSong] /// <- directly add items to the queue
                 try await player.prepareToPlay()
                 try await player.play()
                 resolve("Song is added to queue")
@@ -763,6 +765,10 @@ class MusicModule: RCTEventEmitter {
                 
                 // You can now use the `songs` array as needed
                 print("These are all the playlist fetched songs \(songs)")
+                
+                let player = SystemMusicPlayer.shared
+                player.queue = [playlist]
+                
                 return songs
             }
             
@@ -1135,16 +1141,16 @@ class MusicModule: RCTEventEmitter {
                     items[i] = item
                 }
                 
-                var sortedSongs: [[String: Any]] {
-                    return items.sorted { (first, second) -> Bool in
-                        guard let firstId = first["localId"] as? String, let secondId = second["localId"] as? String else {
-                            return false
-                        }
-                        return firstId < secondId
-                    }
-                }
+//                var sortedSongs: [[String: Any]] {
+//                    return items.sorted { (first, second) -> Bool in
+//                        guard let firstId = first["localId"] as? String, let secondId = second["localId"] as? String else {
+//                            return false
+//                        }
+//                        return firstId < secondId
+//                    }
+//                }
                                 
-                resolve(["items": sortedSongs])
+                resolve(["items": items])
             }
         }
     }
