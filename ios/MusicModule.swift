@@ -732,6 +732,10 @@ class MusicModule: RCTEventEmitter {
                 // try await player.queue.insert(catalogSong, position: MusicPlayer.Queue.EntryInsertionPosition.afterCurrentEntry)
                 
 //                player.queue = [catalogSong] /// <- directly add items to the queue
+                let entry: SystemMusicPlayer.Queue.Entry = SystemMusicPlayer.Queue.Entry(catalogSong)
+        
+                player.queue.currentEntry = entry
+                
                 try await player.prepareToPlay()
                 try await player.play()
                 resolve("Song is added to queue")
