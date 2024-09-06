@@ -729,7 +729,7 @@ class MusicModule: RCTEventEmitter {
                 
                 let player = SystemMusicPlayer.shared
                 
-                try await player.queue.insert(catalogSong, position: MusicPlayer.Queue.EntryInsertionPosition.afterCurrentEntry)
+                // try await player.queue.insert(catalogSong, position: MusicPlayer.Queue.EntryInsertionPosition.afterCurrentEntry)
                 
 //                player.queue = [catalogSong] /// <- directly add items to the queue
                 try await player.prepareToPlay()
