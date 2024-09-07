@@ -710,8 +710,7 @@ class MusicModule: RCTEventEmitter {
     }
     
     @objc(fetchSongAndPlay:resolver:rejecter:)
-    func fetchSongAndPlay(_ itemId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
-    {
+    func fetchSongAndPlay(_ itemId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
             // Replace this with your actual API call logic
             let url = URL(string: "https://api.music.apple.com/v1/me/library/songs/\(itemId)/catalog")!
@@ -720,30 +719,42 @@ class MusicModule: RCTEventEmitter {
                 let request = MusicDataRequest(urlRequest: URLRequest(url: url))
                 let response = try await request.response()
                 
+                // Decode the song collection
                 let catalogSongs = try JSONDecoder().decode(MusicItemCollection<Song>.self, from: response.data)
                 
                 guard let catalogSong = catalogSongs.first else {
-                                reject("ERROR", "No songs found", nil)  // Use reject to pass the error context to JS
-                                return  // Exit the function since there's no song to play
-                            }
+                    reject("ERROR", "No songs found", nil)  // Use reject to pass the error context to JS
+                    return  // Exit the function since there's no song to play
+                }
                 
-                let player = SystemMusicPlayer.shared
+                // Access the shared ApplicationMusicPlayer
+                let player = ApplicationMusicPlayer.shared
+                let entries = player.queue.entries // Explicitly define type as array of queue entries
+
                 
-                // try await player.queue.insert(catalogSong, position: MusicPlayer.Queue.EntryInsertionPosition.afterCurrentEntry)
+                // Find the index of the entry with the matching ID
+                guard let index = entries.firstIndex(where: { $0.id == itemId }) else {
+                    reject("ERROR", "Song with id \(itemId) not found in the queue", nil)
+                    return
+                }
                 
-//                player.queue = [catalogSong] /// <- directly add items to the queue
-                let entry: SystemMusicPlayer.Queue.Entry = SystemMusicPlayer.Queue.Entry(catalogSong)
-        
-                player.queue.currentEntry = entry
+                let rearrangedEntries = Array(entries[index...]) + Array(entries[..<index])
                 
+                let newQueue = ApplicationMusicPlayer.Queue(rearrangedEntries)
+                player.queue = newQueue  // Update the queue
+                
+                // Prepare to play the new queue
                 try await player.prepareToPlay()
                 try await player.play()
-                resolve("Song is added to queue")
+                
+                // Resolve the promise
+                resolve("Song is added to queue and playing")
             } catch {
                 reject("ERROR", "Failed to fetch song details: \(error)", error)
             }
         }
     }
+
     
     
     
@@ -773,9 +784,14 @@ class MusicModule: RCTEventEmitter {
                 // You can now use the `songs` array as needed
                 print("These are all the playlist fetched songs \(songs)")
                 
-                let player = SystemMusicPlayer.shared
-                let queue: SystemMusicPlayer.Queue = SystemMusicPlayer.Queue(for: songs)
+//                let songIDs: [String] = songs.map { $0.id.rawValue } // Assuming `id` is the property holding the song ID
+
+                
+                let player = ApplicationMusicPlayer.shared
+                let queue: ApplicationMusicPlayer.Queue = ApplicationMusicPlayer.Queue(for: songs)
                 player.queue = queue
+                
+//                musicPlayer.setQueue(with: songIDs)
                 
                 return songs
             }

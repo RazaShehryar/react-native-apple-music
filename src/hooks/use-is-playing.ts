@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import Player from '../modules/player';
-import type { IPlaybackState } from '../types/playback-state';
-import { PlaybackStatus } from '../types/playback-status';
+import { useEffect, useState } from "react";
+import Player from "../modules/player";
+import type { IPlaybackState } from "../types/playback-state";
+import { PlaybackStatus } from "../types/playback-status";
 
 /**
  * Custom React hook to track music playback status.
@@ -16,14 +16,17 @@ const useIsPlaying = (): { isPlaying: boolean; error?: Error } => {
   useEffect(() => {
     Player.getCurrentState()
       .then((state: IPlaybackState) =>
-        setIsPlaying(state?.playbackStatus === PlaybackStatus.PLAYING),
+        setIsPlaying(state?.playbackStatus === PlaybackStatus.PLAYING)
       )
       .catch(setError);
 
-    const listener = Player.addListener('onPlaybackStateChange', (state: IPlaybackState) => {
-      setError(undefined);
-      setIsPlaying(state.playbackStatus === PlaybackStatus.PLAYING);
-    });
+    const listener = Player.addListener(
+      "onPlaybackStateChange",
+      (state: IPlaybackState) => {
+        setError(undefined);
+        setIsPlaying(state.playbackStatus === PlaybackStatus.PLAYING);
+      }
+    );
 
     return () => listener.remove();
   }, []);

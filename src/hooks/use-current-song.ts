@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import Player from '../modules/player';
-import type { IPlaybackState } from '../types/playback-state';
-import type { ISong } from '../types/song';
+import { useEffect, useState } from "react";
+import Player from "../modules/player";
+import type { IPlaybackState } from "../types/playback-state";
+import type { ISong } from "../types/song";
 
 /**
  * A hook to track the currently playing song from Apple Music.
@@ -18,10 +18,13 @@ const useCurrentSong = (): { song?: ISong; error?: Error } => {
       .then((state) => setCurrentSong(state.currentSong))
       .catch(setError);
 
-    const listener = Player.addListener('onCurrentSongChange', (state: IPlaybackState) => {
-      setError(undefined);
-      setCurrentSong(state?.currentSong);
-    });
+    const listener = Player.addListener(
+      "onCurrentSongChange",
+      (state: IPlaybackState) => {
+        setError(undefined);
+        setCurrentSong(state?.currentSong);
+      }
+    );
 
     return () => listener.remove();
   }, []);
