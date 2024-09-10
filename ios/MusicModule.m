@@ -36,6 +36,7 @@ RCT_EXTERN_METHOD(fetchSongAndPlay:(NSString *)itemId resolver:(RCTPromiseResolv
 
 RCT_EXTERN_METHOD(play)
 RCT_EXTERN_METHOD(pause)
+RCT_EXTERN_METHOD(stop)
 RCT_EXTERN_METHOD(skipToNextEntry)
 RCT_EXTERN_METHOD(skipToPreviousEntry)
 RCT_EXTERN_METHOD(togglePlayerState)

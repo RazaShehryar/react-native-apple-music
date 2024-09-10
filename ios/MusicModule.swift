@@ -365,6 +365,11 @@ class MusicModule: RCTEventEmitter {
         musicPlayer.play()
     }
     
+    @objc(stop)
+    func stop() {
+        SystemMusicPlayer.shared.stop()
+    }
+    
     @objc(pause)
     func pause() {
         SystemMusicPlayer.shared.pause()
@@ -728,22 +733,9 @@ class MusicModule: RCTEventEmitter {
                 }
                 
                 // Access the shared ApplicationMusicPlayer
-                let player = ApplicationMusicPlayer.shared
-                let entries = player.queue.entries // Explicitly define type as array of queue entries
-
-                
-                // Find the index of the entry with the matching ID
-                guard let index = entries.firstIndex(where: { $0.id == itemId }) else {
-                    reject("ERROR", "Song with id \(itemId) not found in the queue", nil)
-                    return
-                }
-                
-                let rearrangedEntries = Array(entries[index...]) + Array(entries[..<index])
-                
-                let newQueue = ApplicationMusicPlayer.Queue(rearrangedEntries)
-                player.queue = newQueue  // Update the queue
-                
-                // Prepare to play the new queue
+                let player = SystemMusicPlayer.shared
+                player.queue = [catalogSong]
+             
                 try await player.prepareToPlay()
                 try await player.play()
                 
@@ -769,8 +761,6 @@ class MusicModule: RCTEventEmitter {
             let playlists = try JSONDecoder().decode(MusicItemCollection<Playlist>.self, from: response.data)
             guard let playlist = playlists.first else { return [] }
             
-
-            
             if let tracks = playlist.tracks {
                
                 // Collect all Song objects into an array
@@ -787,9 +777,7 @@ class MusicModule: RCTEventEmitter {
 //                let songIDs: [String] = songs.map { $0.id.rawValue } // Assuming `id` is the property holding the song ID
 
                 
-                let player = ApplicationMusicPlayer.shared
-                let queue: ApplicationMusicPlayer.Queue = ApplicationMusicPlayer.Queue(for: songs)
-                player.queue = queue
+               
                 
 //                musicPlayer.setQueue(with: songIDs)
                 

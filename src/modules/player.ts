@@ -84,6 +84,12 @@ class Player {
     MusicModule.pause();
   }
   /**
+   * Stops playback of the current song.
+   */
+  public static stop(): void {
+    MusicModule.stop();
+  }
+  /**
    * Retrieves the local current playback state from the native music player.
    * This function returns a promise that resolves to the local current playback state.
    * @returns {Promise<IPlaybackState>} A promise that resolves to the local current playback state of the music player.
