@@ -465,6 +465,7 @@ class MusicModule: RCTEventEmitter {
         return [
             "id": String(describing: track.id),
             "isrc": String(describing: track.isrc),
+            "url": String(describing: track.url?.absoluteString),
             "title": track.title,
             "artistName": track.artistName,
             "artworkUrl": artworkUrlString,
@@ -487,6 +488,7 @@ class MusicModule: RCTEventEmitter {
         return [
             "id": String(describing: song.id),
             "isrc": String(describing: song.isrc),
+            "url": String(describing: song.url?.absoluteString),
             "title": song.title,
             "artistName": song.artistName,
             "artworkUrl": artworkUrlString,
