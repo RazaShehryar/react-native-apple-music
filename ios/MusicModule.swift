@@ -464,6 +464,7 @@ class MusicModule: RCTEventEmitter {
         
         return [
             "id": String(describing: track.id),
+            "isrc": String(describing: track.isrc),
             "title": track.title,
             "artistName": track.artistName,
             "artworkUrl": artworkUrlString,
@@ -485,6 +486,7 @@ class MusicModule: RCTEventEmitter {
         
         return [
             "id": String(describing: song.id),
+            "isrc": String(describing: song.isrc),
             "title": song.title,
             "artistName": song.artistName,
             "artworkUrl": artworkUrlString,
@@ -717,36 +719,44 @@ class MusicModule: RCTEventEmitter {
     @objc(fetchSongAndPlay:resolver:rejecter:)
     func fetchSongAndPlay(_ itemId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
-            // Replace this with your actual API call logic
-            let url = URL(string: "https://api.music.apple.com/v1/me/library/songs/\(itemId)/catalog")!
-            
             do {
-                let request = MusicDataRequest(urlRequest: URLRequest(url: url))
-                let response = try await request.response()
-                
-                // Decode the song collection
-                let catalogSongs = try JSONDecoder().decode(MusicItemCollection<Song>.self, from: response.data)
-                
-                guard let catalogSong = catalogSongs.first else {
-                    reject("ERROR", "No songs found", nil)  // Use reject to pass the error context to JS
-                    return  // Exit the function since there's no song to play
+                let player = SystemMusicPlayer.shared
+                var url: URL
+
+                if itemId.starts(with: "i.") {
+                    // Handle itemId that starts with "i." - Library songs
+                    url = URL(string: "https://api.music.apple.com/v1/me/library/songs/\(itemId)/catalog")!
+                } else {
+                    // Handle itemId for catalog songs
+                    // Extract the storefront (first two letters of the ISRC)
+                    let storefront = String(itemId.prefix(2)).lowercased()
+                    url = URL(string: "https://api.music.apple.com/v1/catalog/\(storefront)/songs?filter[isrc]=\(itemId)")!
                 }
                 
-                // Access the shared ApplicationMusicPlayer
-                let player = SystemMusicPlayer.shared
+                let request = MusicDataRequest(urlRequest: URLRequest(url: url))
+                let response = try await request.response()
+
+                // Decode the song collection
+                let catalogSongs = try JSONDecoder().decode(MusicItemCollection<Song>.self, from: response.data)
+
+                guard let catalogSong = catalogSongs.first else {
+                    reject("ERROR", "No songs found", nil)
+                    return
+                }
+
+                // Queue and play the song
                 player.queue = [catalogSong]
-             
                 try await player.prepareToPlay()
                 try await player.play()
-                
+
                 // Resolve the promise
                 resolve("Song is added to queue and playing")
+
             } catch {
                 reject("ERROR", "Failed to fetch song details: \(error)", error)
             }
         }
     }
-
     
     
     
