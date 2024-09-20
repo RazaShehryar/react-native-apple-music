@@ -718,22 +718,78 @@ class MusicModule: RCTEventEmitter {
         }
     }
     
+    
+    @objc(fetchPlaylistSongAndPlay:playlistId:resolver:rejecter:)
+    func fetchPlaylistSongAndPlay(_ itemId: String, playlistId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                // Fetch all songs in the playlist
+                let songs: [Song] = await self.fetchPlaylistSongs(for: playlistId)
+                
+                // Find the index of the current itemId in the list of songs
+                guard let currentIndex = songs.firstIndex(where: { $0.id.rawValue == itemId }) else {
+                    reject("ERROR", "Item ID not found in playlist", nil)
+                    return
+                }
+                
+                // Filter out songs before the current itemId
+                let remainingSongs = songs[currentIndex...]
+
+                // Create an array to hold the songs for the queue
+                var playerQueue: [Song] = []
+                
+                for song in remainingSongs {
+                    if song.id.rawValue.starts(with: "a.") {
+                        // Fetch the song using MusicCatalogResourceRequest
+                        let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: song.id)
+                        let response = try await request.response()
+                        
+                        guard let catalogSong: Song = response.items.first else {
+                            reject("ERROR", "No songs found for itemId: \(song.id.rawValue)", nil)
+                            return
+                        }
+                        
+                        playerQueue.append(catalogSong)
+                        
+                    } else {
+                        // Fetch the song using the URL
+                        let url = URL(string: "https://api.music.apple.com/v1/me/library/songs/\(song.id.rawValue)/catalog")!
+                        let request = MusicDataRequest(urlRequest: URLRequest(url: url))
+                        let response = try await request.response()
+                        
+                        let catalogSongs: MusicItemCollection<Song> = try JSONDecoder().decode(MusicItemCollection<Song>.self, from: response.data)
+                        
+                        guard let catalogSong: Song = catalogSongs.first else {
+                            reject("ERROR", "No songs found for itemId: \(song.id.rawValue)", nil)
+                            return
+                        }
+                        
+                        playerQueue.append(catalogSong)
+                    }
+                }
+                
+                // Convert the array to a MusicItemCollection<Song>
+                let playerQueueCollection: MusicItemCollection<Song> = MusicItemCollection(playerQueue)
+                
+                let player = SystemMusicPlayer.shared
+                player.queue = SystemMusicPlayer.Queue(for: playerQueueCollection)
+                try await player.prepareToPlay()
+                try await player.play()
+                
+                resolve("Playlist songs are added to queue. Playing \(itemId) song now!")
+
+            } catch {
+                reject("ERROR", "Failed to fetch song details: \(error)", error)
+            }
+        }
+    }
+    
     @objc(fetchSongAndPlay:resolver:rejecter:)
     func fetchSongAndPlay(_ itemId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
             do {
                 let player = SystemMusicPlayer.shared
-                var url: URL
-
-                if itemId.starts(with: "i.") {
-                    // Handle itemId that starts with "i." - Library songs
-                    url = URL(string: "https://api.music.apple.com/v1/me/library/songs/\(itemId)/catalog")!
-                } else {
-                    // Handle itemId for catalog songs
-                    // Extract the storefront (first two letters of the ISRC)
-                    let storefront = String(itemId.prefix(2)).lowercased()
-                    url = URL(string: "https://api.music.apple.com/v1/catalog/\(storefront)/songs?filter[isrc]=\(itemId)")!
-                }
+                var url: URL = URL(string: "https://api.music.apple.com/v1/me/library/songs/\(itemId)/catalog")!
                 
                 let request = MusicDataRequest(urlRequest: URLRequest(url: url))
                 let response = try await request.response()

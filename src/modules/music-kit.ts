@@ -69,6 +69,24 @@ class MusicKit {
     }
   }
   /**
+   * @param itemId - ID of the song to be played
+   * @param playlistId - ID of the current playlist
+   * @returns {Promise<void>} A promise is resolved when the song is successfully added to a queue
+   */
+  public static async fetchPlaylistSongAndPlay(
+    itemId: string,
+    playlistId: string
+  ): Promise<void> {
+    try {
+      await MusicModule.fetchPlaylistSongAndPlay(itemId, playlistId);
+    } catch (error) {
+      console.error(
+        "Apple Music Kit: Playing Song Failed. method fetchPlaylistSongAndPlay",
+        error
+      );
+    }
+  }
+  /**
    * @param persistentID - ID of collection to be set in a player's queue
    * @param {MusicItem} type - Type of collection to be found and set
    * @returns {Promise<void>} A promise is resolved when tracks successfully added to a queue and plays

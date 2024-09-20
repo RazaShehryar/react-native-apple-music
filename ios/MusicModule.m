@@ -34,6 +34,8 @@ RCT_EXTERN_METHOD(playLocalSongInQueue:(NSString *)persistentID)
 
 RCT_EXTERN_METHOD(fetchSongAndPlay:(NSString *)itemId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(fetchPlaylistSongAndPlay:(NSString *)itemId playlistId:(NSString *)playlistId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(play)
 RCT_EXTERN_METHOD(pause)
 RCT_EXTERN_METHOD(stop)
