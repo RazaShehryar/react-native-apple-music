@@ -740,16 +740,17 @@ class MusicModule: RCTEventEmitter {
                 
                 for song in remainingSongs {
                     if song.id.rawValue.starts(with: "a.") {
-                        // Fetch the song using MusicCatalogResourceRequest
-                        let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: song.id)
+                        let title = cleanAndFormat(song.title)
+                        let artistName = cleanAndFormat(song.artistName)
+                        let term = "\(title)+\(artistName)"
+                        
+                        let searchTypes: [MusicCatalogSearchable.Type] = [Song.self]
+                        var request = MusicCatalogSearchRequest(term: term, types: searchTypes)
                         let response = try await request.response()
-                        
-                        guard let catalogSong: Song = response.items.first else {
-                            reject("ERROR", "No songs found for itemId: \(song.id.rawValue)", nil)
-                            return
-                        }
-                        
-                        playerQueue.append(catalogSong)
+                        guard let foundSong = response.songs.first else {
+                                               continue
+                                           }
+                        playerQueue.append(foundSong)
                         
                     } else {
                         // Fetch the song using the URL
@@ -1376,6 +1377,12 @@ class MusicModule: RCTEventEmitter {
         }
     }
     
+    
+    func cleanAndFormat(_ string: String) -> String {
+        let trimmedString = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanedString = trimmedString.components(separatedBy: .whitespaces).filter { !$0.isEmpty }.joined(separator: "+")
+        return cleanedString
+    }
     
     @objc(setLocalPlaybackQueueAll:rejecter:)
     func setLocalPlaybackQueueAll(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
