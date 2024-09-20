@@ -732,49 +732,65 @@ class MusicModule: RCTEventEmitter {
                     return
                 }
                 
+                
                 // Filter out songs before the current itemId
                 let remainingSongs = songs[currentIndex...]
 
-                // Create an array to hold the songs for the queue
-                var playerQueue: [Song] = []
-                
-                for song in remainingSongs {
-                    if song.id.rawValue.starts(with: "a.") {
-                        let title = cleanAndFormat(song.title)
-                        let artistName = cleanAndFormat(song.artistName)
-                        let term = "\(title)+\(artistName)"
-                        
-                        let searchTypes: [MusicCatalogSearchable.Type] = [Song.self]
-                        var request = MusicCatalogSearchRequest(term: term, types: searchTypes)
-                        let response = try await request.response()
-                        guard let foundSong = response.songs.first else {
-                                               continue
-                                           }
-                        playerQueue.append(foundSong)
-                        
-                    } else {
-                        // Fetch the song using the URL
-                        let url = URL(string: "https://api.music.apple.com/v1/me/library/songs/\(song.id.rawValue)/catalog")!
-                        let request = MusicDataRequest(urlRequest: URLRequest(url: url))
-                        let response = try await request.response()
-                        
-                        let catalogSongs: MusicItemCollection<Song> = try JSONDecoder().decode(MusicItemCollection<Song>.self, from: response.data)
-                        
-                        guard let catalogSong: Song = catalogSongs.first else {
-                            reject("ERROR", "No songs found for itemId: \(song.id.rawValue)", nil)
-                            return
-                        }
-                        
-                        playerQueue.append(catalogSong)
-                    }
-                }
+//                // Create an array to hold the songs for the queue
+//                var playerQueue: [Song] = []
+//                
+//                for song in remainingSongs {
+//                    if song.id.rawValue.starts(with: "a.") {
+//                        let title = cleanAndFormat(song.title)
+//                        let artistName = cleanAndFormat(song.artistName)
+//                        let term = "\(title)+\(artistName)"
+//                        
+//                        let searchTypes: [MusicCatalogSearchable.Type] = [Song.self]
+//                        let request = MusicCatalogSearchRequest(term: term, types: searchTypes)
+//                        let response = try await request.response()
+//                        guard let foundSong = response.songs.first else {
+//                                               continue
+//                                           }
+//                        playerQueue.append(foundSong)
+//                        
+//                    } else {
+//                        // Fetch the song using the URL
+//                        let url = URL(string: "https://api.music.apple.com/v1/me/library/songs/\(song.id.rawValue)/catalog")!
+//                        let request = MusicDataRequest(urlRequest: URLRequest(url: url))
+//                        let response = try await request.response()
+//                        
+//                        let catalogSongs: MusicItemCollection<Song> = try JSONDecoder().decode(MusicItemCollection<Song>.self, from: response.data)
+//                        
+//                        guard let catalogSong: Song = catalogSongs.first else {
+//                            reject("ERROR", "No songs found for itemId: \(song.id.rawValue)", nil)
+//                            return
+//                        }
+//                        print("this is the song fetched \(catalogSong)")
+//                        playerQueue.append(catalogSong)
+//                    }
+//                }
                 
                 // Convert the array to a MusicItemCollection<Song>
-                let playerQueueCollection: MusicItemCollection<Song> = MusicItemCollection(playerQueue)
+                let playerQueueCollection: MusicItemCollection<Song> = MusicItemCollection(songs)
+                
+                
                 
                 let player = SystemMusicPlayer.shared
+                
                 player.queue = SystemMusicPlayer.Queue(for: playerQueueCollection)
+                
+                print("this is the song to be played \(songs[currentIndex])")
+                
+        
+            
+                
                 try await player.prepareToPlay()
+
+                // Loop to skip to the next entry 'currentIndex' times
+                for _ in 0..<currentIndex {
+                    try await player.skipToNextEntry()
+                }
+                
                 try await player.play()
                 
                 resolve("Playlist songs are added to queue. Playing \(itemId) song now!")
