@@ -774,10 +774,9 @@ class MusicModule: RCTEventEmitter {
                 let playerQueueCollection: MusicItemCollection<Song> = MusicItemCollection(songs)
                 
                 
-                
                 let player = SystemMusicPlayer.shared
                 
-                player.queue = SystemMusicPlayer.Queue(for: playerQueueCollection)
+                player.queue = SystemMusicPlayer.Queue.init(for: playerQueueCollection, startingAt: songs[currentIndex])
                 
                 print("this is the song to be played \(songs[currentIndex])")
                 
@@ -786,11 +785,11 @@ class MusicModule: RCTEventEmitter {
                 
                 try await player.prepareToPlay()
 
-                // Loop to skip to the next entry 'currentIndex' times
-                for _ in 0..<currentIndex {
-                    try await player.skipToNextEntry()
-                }
-                
+//                // Loop to skip to the next entry 'currentIndex' times
+//                for _ in 0..<currentIndex {
+//                    try await player.skipToNextEntry()
+//                }
+//                
                 try await player.play()
                 
                 resolve("Playlist songs are added to queue. Playing \(itemId) song now!")
