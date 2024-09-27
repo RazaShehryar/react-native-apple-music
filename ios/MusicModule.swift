@@ -719,10 +719,12 @@ class MusicModule: RCTEventEmitter {
     }
     
     
+    @available(iOS 16.0, *)
     @objc(fetchPlaylistSongAndPlay:playlistId:resolver:rejecter:)
     func fetchPlaylistSongAndPlay(_ itemId: String, playlistId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
             do {
+                print("incoming item id \(itemId)")
                 // Fetch all songs in the playlist
                 let songs: [Song] = await self.fetchPlaylistSongs(for: playlistId)
                 
@@ -833,19 +835,27 @@ class MusicModule: RCTEventEmitter {
     }
     
     
-    
+    @available(iOS 16.0, *)
     func fetchPlaylistSongs(for playlistId: String) async -> [Song] {
         // Replace this with your actual API call logic
+        
         let url = URL(string: "https://api.music.apple.com/v1/me/library/playlists/\(playlistId)?include=tracks")!
         
         do {
-            let request = MusicDataRequest(urlRequest: URLRequest(url: url))
+            var request = MusicLibraryRequest<MusicKit.Playlist>()
+            request.filter(matching: \.id, equalTo: MusicItemID(rawValue: playlistId))
+            
+//            let request = MusicDataRequest(urlRequest: URLRequest(url: url))
             let response = try await request.response()
             
-            let playlists = try JSONDecoder().decode(MusicItemCollection<Playlist>.self, from: response.data)
-            guard let playlist = playlists.first else { return [] }
             
-            if let tracks = playlist.tracks {
+//            let playlists = try JSONDecoder().decode(MusicItemCollection<Playlist>.self, from: response.data)
+//            guard let playlist = playlists.first else { return [] }
+            
+            
+            if let tracks = try await response.items[0].with(.tracks).tracks {
+                
+                print("These are the tracks \(tracks)")
                
                 // Collect all Song objects into an array
                 let songs: [Song] = tracks.compactMap { track in
@@ -855,8 +865,6 @@ class MusicModule: RCTEventEmitter {
                     return nil
                 }
                 
-                // You can now use the `songs` array as needed
-                print("These are all the playlist fetched songs \(songs)")
                 
 //                let songIDs: [String] = songs.map { $0.id.rawValue } // Assuming `id` is the property holding the song ID
 
@@ -1046,35 +1054,30 @@ class MusicModule: RCTEventEmitter {
                 var items = response.compactMap(convertSongToDictionary)
                 let songs = try query.items?.compactMap(convertMPSongToDictionary)
                 
-                for i in 0..<items.count {
-                    var item = items[i]
-                    
-                    if let song = songs!.first(where: { songDict -> Bool in
-                        guard
-                            let artistName = (songDict["artistName"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                            let title = (songDict["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-                        else {
-                            return false
-                        }
-                        
-                        let appleMusicArtistName = (item["artistName"] as! String).trimmingCharacters(in: .whitespacesAndNewlines)
-                        let appleMusicTitle = (item["title"] as! String).trimmingCharacters(in: .whitespacesAndNewlines)
-                        
-                        print("local artistName: \(artistName), Apple Music artistName: \(appleMusicArtistName), \(artistName == appleMusicArtistName)")
-                        
-                        print("local title: \(title), Apple Music title: \(appleMusicTitle), \(title == appleMusicTitle)")
-                        
-                        let result = artistName == appleMusicArtistName && title == appleMusicTitle
-                        return result
-                    }) {
-                        item["localId"] = song["id"]
-                        item["albumId"] = song["albumId"]
-                    } else {
-                        item["localId"] = ""
-                        item["albumId"] = ""
-                    }
-                    items[i] = item
-                }
+//                for i in 0..<items.count {
+//                    var item = items[i]
+//                    
+//                    if let song = songs!.first(where: { songDict -> Bool in
+//                        guard
+//                            let artistName = (songDict["artistName"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
+//                            let title = (songDict["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+//                        else {
+//                            return false
+//                        }
+//                        
+//                        let appleMusicArtistName = (item["artistName"] as! String).trimmingCharacters(in: .whitespacesAndNewlines)
+//                        let appleMusicTitle = (item["title"] as! String).trimmingCharacters(in: .whitespacesAndNewlines)
+//                        let result = artistName == appleMusicArtistName && title == appleMusicTitle
+//                        return result
+//                    }) {
+//                        item["localId"] = song["id"]
+//                        item["albumId"] = song["albumId"]
+//                    } else {
+//                        item["localId"] = ""
+//                        item["albumId"] = ""
+//                    }
+//                    items[i] = item
+//                }
                                 
                 resolve(["items": items])
             }
@@ -1202,40 +1205,40 @@ class MusicModule: RCTEventEmitter {
                 
                 let response = await self.fetchPlaylistSongs(for: persistentID)
                 
-                var items = response.compactMap(convertTrackToDictionary)
-                let songs = try query.items?.compactMap(convertMPSongToDictionary)
+                let items = response.compactMap(convertTrackToDictionary)
+//                let songs = try query.items?.compactMap(convertMPSongToDictionary)
                 
-                print("these are the items: \(items), these are the songs: \(String(describing: songs))")
+                print("total songs in playlist: \(items.count)")
                 
-                for i in 0..<items.count {
-                    var item = items[i]
-                    
-                    if let song = songs!.first(where: { songDict -> Bool in
-                        guard
-                            let artistName = (songDict["artistName"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                            let title = (songDict["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-                        else {
-                            return false
-                        }
-                        
-                        let appleMusicArtistName = (item["artistName"] as! String).trimmingCharacters(in: .whitespacesAndNewlines)
-                        let appleMusicTitle = (item["title"] as! String).trimmingCharacters(in: .whitespacesAndNewlines)
-                        
-                        print("local artistName: \(artistName), Apple Music artistName: \(appleMusicArtistName), \(artistName == appleMusicArtistName)")
-                        
-                        print("local title: \(title), Apple Music title: \(appleMusicTitle), \(title == appleMusicTitle)")
-                        
-                        let result = artistName == appleMusicArtistName && title == appleMusicTitle
-                        return result
-                    }) {
-                        item["localId"] = song["id"]
-                        item["albumId"] = song["albumId"]
-                    } else {
-                        item["localId"] = ""
-                        item["albumId"] = ""
-                    }
-                    items[i] = item
-                }
+//                for i in 0..<items.count {
+//                    var item = items[i]
+//                    
+//                    if let song = songs!.first(where: { songDict -> Bool in
+//                        guard
+//                            let artistName = (songDict["artistName"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
+//                            let title = (songDict["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+//                        else {
+//                            return false
+//                        }
+//                        
+//                        let appleMusicArtistName = (item["artistName"] as! String).trimmingCharacters(in: .whitespacesAndNewlines)
+//                        let appleMusicTitle = (item["title"] as! String).trimmingCharacters(in: .whitespacesAndNewlines)
+//                        
+//                        print("local artistName: \(artistName), Apple Music artistName: \(appleMusicArtistName), \(artistName == appleMusicArtistName)")
+//                        
+//                        print("local title: \(title), Apple Music title: \(appleMusicTitle), \(title == appleMusicTitle)")
+//                        
+//                        let result = artistName == appleMusicArtistName && title == appleMusicTitle
+//                        return result
+//                    }) {
+//                        item["localId"] = song["id"]
+//                        item["albumId"] = song["albumId"]
+//                    } else {
+//                        item["localId"] = ""
+//                        item["albumId"] = ""
+//                    }
+//                    items[i] = item
+//                }
                 
 //                var sortedSongs: [[String: Any]] {
 //                    return items.sorted { (first, second) -> Bool in
